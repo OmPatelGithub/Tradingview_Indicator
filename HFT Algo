@@ -1,1 +1,100 @@
+//@version=4
+// EMAs and VWAP
+study("HFT Algo", overlay = true) 
+
+//Set EMA Length
+emaShortPeriod = input(type = input.integer, title = "Short EMA Period", defval = 3)
+emaMediumPeriod = input(type = input.integer, title = "Medium EMA Period", defval = 8)
+emaLongPeriod = input(type = input.integer, title = "Long EMA Period", defval = 12)
+emaTrendPeriod = input(type = input.integer, title = "Trend EMA Period", defval = 50)
+
+//Calculate EMA only if timeframe.isminutes
+float emaShort = na
+float emaMedium = na
+float emaLong = na
+
+if timeframe.isminutes
+
+    emaShort := ema(close, emaShortPeriod)
+    emaMedium := ema(close, emaMediumPeriod)
+    emaLong := ema(close, emaLongPeriod)
+
+float emaTrend = na
+
+if timeframe.isminutes
+    emaTrend = ema(close, emaTrendPeriod)
+
+//Specify VWAP
+
+vwapValue = timeframe.isminutes ? vwap(hlc3) : na
+
+//Bar Colour
+highVolume=volume>sma(volume,50)
+priceUp=close>open
+priceDown=close<open
+
+//Colors
+up_green = color.rgb(10, 180, 152)
+
+sma200 = color.rgb(255, 6, 241)
+sma100 = color.rgb(255, 152, 0)
+sma50 = color.rgb(0, 188, 212)
+
+ema3 = color.rgb(255, 66, 206)
+ema8 = color.rgb(41, 98, 255)
+vwapcolor = color.rgb(255, 183, 77)
+
+
+
+col_priceUp=input(color.white, "Close Up on High Volume", input.color)
+col_priceDown=input(color.yellow, "Close Down on High Volume", input.color)
+col_normal_priceUp=input(up_green, "Close Up", input.color)
+col_normal_priceDown=input(color.red, "Close Down", input.color)
+
+
+
+barColor = (priceUp and highVolume) ? col_priceUp : (priceDown and highVolume) ? col_priceDown : priceUp ? col_normal_priceUp : priceDown ? col_normal_priceDown : na
+
+  
+//Plot Candles
+plotcandle(open, high, low, close, "colored candles", barColor, barColor, editable=false, bordercolor=barColor)
+
+//Plot EMA
+plot(emaShort, title = "Short EMA", color = ema3, linewidth = 3)
+plot(emaMedium, title = "Medium EMA", color = ema8, linewidth = 3)
+// plot(emaLong, title = "Long EMA", color = color.blue, linewidth = 2)
+// plot(emaTrend, title = "Trend EMA", color = color.purple, linewidth = 1)
+plot(series=vwapValue, title = "VWAP", color=vwapcolor, linewidth=3)
+
+
+//Simple Moving Averages (only show up on daily)
+float len1 = na
+float len2 = na
+float len3 = na
+float src1 = na
+float src2 = na
+float src3 = na
+float out1 = na
+float out2 = na
+float out3 = na
+
+if timeframe.isdaily
+
+    len1 = input(50, title="SMA 50")  
+    src1 := input(close, title="SMA Source 50")
+    out1 := sma(src1, len1)
+
+
+    len2 = input(100, title="SMA 100")
+    src2 := input(close, title="SMA Source 100")
+    out2 := sma(src2, len2)
+
+    
+    len3 = input(200, title="SMA 200")
+    src3 := input(close, title="SMA Source 200")
+    out3 := sma(src3, len3)
+
+plot(out2, title="SMA 100", color=sma100, linewidth = 2)
+plot(out1, title="SMA 50", color=sma50, linewidth = 2)
+plot(out3, title="SMA 200", color=sma200, linewidth = 2)
 
